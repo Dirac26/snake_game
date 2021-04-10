@@ -149,7 +149,7 @@ def print_message(subject, content):
         pass
 
 def re_make_window(surf, snake, snack, snack_extra, poision):
-    surf.fill((0, 0, 0))
+    surf.fill((255, 255, 255))
     snake.draw(surf)
     snack.draw(surf)
     if len(snake.body) > 5:
@@ -159,7 +159,6 @@ def re_make_window(surf, snake, snack, snack_extra, poision):
     pygame.display.update()
 
 def game():
-    #init_window = pygame.display.set_mode(500, 500)
     global width, rows, block_size
     width = 500
     rows = 20
