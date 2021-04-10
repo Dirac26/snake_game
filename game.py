@@ -25,8 +25,8 @@ class Cube:
             r = block_size/6
             circle_mid = (i*block_size+center-r, j*block_size+8)
             circle_mid_2 = (i*block_size +block_size-r*2, j*block_size+8)
-            pygame.draw.circle(surf, (0, 0, 0), circle_mid, r)
-            pygame.draw.circle(surf, (0, 0, 0), circle_mid_2, r)
+            pygame.draw.circle(surf, (255, 255, 255), circle_mid, r)
+            pygame.draw.circle(surf, (255, 255, 255), circle_mid_2, r)
 
 
 
@@ -41,11 +41,14 @@ class Snake:
         self.dir_y = 0
     
     def reset(self):
-        self.body= []
+        self.body = []
         self.body.append(self.head)
         self.turns = {}
         self.dir_y = 1
         self.dir_x = 0
+
+    def poisioned(self):
+        self.body = self.body[:-4]
 
     def move(self):
         for event in pygame.event.get():
@@ -108,10 +111,13 @@ class Snake:
             self.body.append(Cube((tail.pos[0], tail.pos[1]-1)))
         elif new_x == 0 and new_y == -1:
             self.body.append(Cube((tail.pos[0], tail.pos[1]+1)))
-        
+    
         self.body[-1].dir_x = new_x
         self.body[-1].dir_y = new_y
-        
+
+    def add_5_cubes(self):
+        for i in range(5):
+            self.add_cube()
 
 def make_snack(rows, item):
     positions = item.body
@@ -142,38 +148,74 @@ def print_message(subject, content):
     except:
         pass
 
-def re_make_window(surf, snake, snack):
+def re_make_window(surf, snake, snack, snack_extra, poision):
     surf.fill((0, 0, 0))
     snake.draw(surf)
     snack.draw(surf)
+    if len(snake.body) > 5:
+        snack_extra.draw(surf)
+        poision.draw(surf)
     make_grid(surf)
     pygame.display.update()
 
 def game():
+    #init_window = pygame.display.set_mode(500, 500)
     global width, rows, block_size
     width = 500
     rows = 20
     block_size = width / rows
     window = pygame.display.set_mode((width, width))
     snake = Snake((255, 0, 0), (rows/2, rows/2))
-    snack = Cube(make_snack(rows, snake), color=(0, 0, 255))
+    snack = Cube(make_snack(rows, snake), color=(255,69,0))
+    snack_extra = Cube(make_snack(rows, snake), color=(0, 255, 0))
+    poision = Cube(make_snack(rows, snake), color=(0, 0, 255))
     game_on = True
     clock = pygame.time.Clock()
+    blocks_traveled_from_last = 0
+    timing = 10
     while game_on:
+        blocks_traveled_from_last += 1
         pygame.event.pump()
         pygame.time.delay(5)
-        clock.tick(10)
+        clock.tick(timing)
         snake.move()
         if snake.body[0].pos == snack.pos:
-           snake.add_cube()
-           snack = Cube(make_snack(rows, snake), color=(0, 0, 255)) 
+            snake.add_cube()
+            snack = Cube(make_snack(rows, snake), color=(255,69,0))
+            poision = Cube(make_snack(rows, snake), color=(0, 0, 255))
+            snack_extra = Cube(make_snack(rows, snake), color=(0, 255, 0))
+            blocks_traveled_from_last = 0
+        elif len(snake.body) > 5 and snake.body[0].pos == snack_extra.pos:
+            snake.add_5_cubes()
+            snack = Cube(make_snack(rows, snake), color=(255,69,0))
+            snack_extra = Cube(make_snack(rows, snake), color=(0, 255, 0))
+            poision = Cube(make_snack(rows, snake), color=(0, 0, 255))
+            blocks_traveled_from_last = 0
+        elif len(snake.body) > 5 and snake.body[0].pos == poision.pos:
+            snack = Cube(make_snack(rows, snake), color=(255,69,0))
+            snack_extra = Cube(make_snack(rows, snake), color=(0, 255, 0))
+            snake.poisioned()
+            poision = Cube(make_snack(rows, snake), color=(0, 0, 255))
+            blocks_traveled_from_last = 0
         for x in range(len(snake.body)):
             if snake.body[x].pos in list(map(lambda z: z.pos, snake.body[x+1:])):
                 print(f"Score: {len(snake.body)}")
                 print_message("You done fucked up", "try again")
                 snake.reset()
                 break
-        re_make_window(window, snake, snack)
+
+        if len(snake.body) > 5:
+            timing = 15
+        elif len(snake.body) > 10:
+            timing = 20
+        else:
+            timing = 10
+
+        if blocks_traveled_from_last >= rows*1.5:
+            snack_extra = Cube(make_snack(rows, snake), color=(0, 255, 0))
+            blocks_traveled_from_last = 0
+
+        re_make_window(window, snake, snack, snack_extra, poision)
 
 
 
