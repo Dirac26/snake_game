@@ -54,19 +54,19 @@ class Snake:
             keys = pygame.key.get_pressed()
 
             for key in keys:
-                if keys[pygame.K_LEFT]:
+                if keys[pygame.K_LEFT] and self.dir_x != 1:
                     self.dir_x = -1
                     self.dir_y = 0
                     self.turns[self.head.pos[:]] = [self.dir_x, self.dir_y]
-                elif keys[pygame.K_RIGHT]:
+                elif keys[pygame.K_RIGHT] and self.dir_x != -1:
                     self.dir_x = 1
                     self.dir_y = 0
                     self.turns[self.head.pos[:]] = [self.dir_x, self.dir_y]
-                elif keys[pygame.K_UP]:
+                elif keys[pygame.K_UP] and self.dir_y != 1:
                     self.dir_x = 0
                     self.dir_y = -1
                     self.turns[self.head.pos[:]] = [self.dir_x, self.dir_y]
-                elif keys[pygame.K_DOWN]:
+                elif keys[pygame.K_DOWN] and self.dir_y != -1:
                     self.dir_x = 0
                     self.dir_y = 1
                     self.turns[self.head.pos[:]] = [self.dir_x, self.dir_y]
@@ -171,7 +171,7 @@ def game():
             if snake.body[x].pos in list(map(lambda z: z.pos, snake.body[x+1:])):
                 print(f"Score: {len(snake.body)}")
                 print_message("You done fucked up", "try again")
-                snake.reset(row/2, row/2)
+                snake.reset()
                 break
         re_make_window(window, snake, snack)
 
